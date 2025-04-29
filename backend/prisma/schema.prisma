@@ -1,0 +1,60 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role
+  pets      Pet[]    @relation("Owner")
+  adoptions AdoptionForm[] @relation("Adopter")
+}
+
+enum Role {
+  ADMIN
+  USER
+  VETERINARIAN
+  CASHIER
+}
+
+model Pet {
+  id          Int          @id @default(autoincrement())
+  name        String
+  species     String
+  ownerId     Int
+  owner       User         @relation("Owner", fields: [ownerId], references: [id])
+  diagnostics Diagnostic[]
+  adoptions   AdoptionForm[]
+}
+
+model Diagnostic {
+  id          Int      @id @default(autoincrement())
+  petId       Int
+  pet         Pet      @relation(fields: [petId], references: [id])
+  date        DateTime
+  description String
+}
+
+model AdoptionForm {
+  id          Int      @id @default(autoincrement())
+  petId       Int
+  pet         Pet      @relation(fields: [petId], references: [id])
+  adopterId   Int
+  adopter     User     @relation("Adopter", fields: [adopterId], references: [id])
+  status      String
+  createdAt   DateTime @default(now())
+}
+
+model Transaction {
+  id          Int      @id @default(autoincrement())
+  amount      Float
+  date        DateTime
+  description String
+}
